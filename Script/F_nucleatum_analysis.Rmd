@@ -1,0 +1,70 @@
+---
+title: "Fusobacterium nucleatum analysis"
+author: "Bernard Lee"
+date: "2020-10-19"
+output: html_notebook
+editor_options: 
+  chunk_output_type: inline
+---
+
+#### Load library
+```{r}
+library(tidyverse)
+```
+
+#### Load data
+```{r}
+dat <- read.delim("/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/MyBrCa_Batch1_and_2_counts_cleaned.txt", check.names = FALSE)
+rownames(dat) <- dat$Gene
+```
+
+#### Quantile normalize
+```{r}
+# Quantile normalization function
+quantile_normalization <- function(df){
+  df_rank <- apply(df, 2, rank, ties.method = "min")
+  df_sorted <- data.frame(apply(df, 2, sort))
+  df_mean <- apply(df_sorted, 1, mean)
+  
+  index_to_mean <- function(my_index, my_mean){
+    return(my_mean[my_index])
+  }
+  df_final <- apply(df_rank, 2, index_to_mean, my_mean=df_mean)
+  rownames(df_final) <- rownames(df)
+  return(df_final)
+}
+
+dat_qt_normalize <- as.data.frame(quantile_normalization(dat[, 2:length(dat)]))
+dat_qt_normalize[50:54, 1:5]
+
+dat_qt_normalize$GeneName <- rownames(dat_qt_normalize)
+dat_qt_normalize$Description <- rownames(dat_qt_normalize)
+dat_qt_normalize <- dat_qt_normalize[, c((length(dat_qt_normalize)-1):length(dat_qt_normalize), 1:(length(dat_qt_normalize)-2))]
+dat_qt_normalize[50:54, 1:5]
+
+write_delim(dat_qt_normalize, "/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/MyBrCa_Batch1_and_2_counts_cleaned.gct", delim = "\t")
+
+```
+
+#### Boxplot Gal GalNac ssGSEA genes
+```{r}
+GalGalnac_BrCA <- read_delim("/Users/mac/Desktop/trial_boxplot_GalGalnac.txt", delim = "\t")
+GalGalnac_BrCA$log10 <- log10(GalGalnac_BrCA$`Gal-Galnac_genes_ssGSEA_Enrichment`)
+
+par(pty = "s")
+boxplot(GalGalnac_BrCA$log10)
+
+# 95th quantile
+Q <- quantile(GalGalnac_BrCA[[2]], 0.95)
+ninty_fifth_percentile <- subset(GalGalnac_BrCA, GalGalnac_BrCA[[2]] > Q)
+
+
+```
+
+
+#### Session info
+```{r}
+info <- sessionInfo()
+info
+```
+
