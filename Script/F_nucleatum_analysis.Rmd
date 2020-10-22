@@ -70,8 +70,6 @@ names(BrCa_samples) <- "BrCa_samples"
 write_delim(BrCa_samples, "/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/MyBrCa_metadata.txt", delim = "\t")
 ```
 
-
-
 #### Session info
 ```{r}
 info <- sessionInfo()
