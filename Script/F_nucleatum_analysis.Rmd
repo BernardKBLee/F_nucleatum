@@ -42,7 +42,7 @@ dat_qt_normalize$Description <- rownames(dat_qt_normalize)
 dat_qt_normalize <- dat_qt_normalize[, c((length(dat_qt_normalize)-1):length(dat_qt_normalize), 1:(length(dat_qt_normalize)-2))]
 dat_qt_normalize[50:54, 1:5]
 
-write_delim(dat_qt_normalize, "/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/MyBrCa_Batch1_and_2_counts_cleaned.gct", delim = "\t")
+#write_delim(dat_qt_normalize, "/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/MyBrCa_Batch1_and_2_counts_cleaned.gct", delim = "\t")
 
 ```
 
@@ -57,8 +57,6 @@ boxplot(GalGalnac_BrCA$log10)
 # 95th quantile
 Q <- quantile(GalGalnac_BrCA[[2]], 0.95)
 ninty_fifth_percentile <- subset(GalGalnac_BrCA, GalGalnac_BrCA[[2]] > Q)
-
-
 ```
 
 #### Create metadata
@@ -67,8 +65,293 @@ BrCa_samples <- names(dat)[2:length(dat)]
 BrCa_samples <- as_tibble(BrCa_samples)
 names(BrCa_samples) <- "BrCa_samples"
 
-write_delim(BrCa_samples, "/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/MyBrCa_metadata.txt", delim = "\t")
+#write_delim(BrCa_samples, "/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/MyBrCa_metadata.txt", delim = "\t")
 ```
+
+#### boxplot analysis for blastn reads
+```{r}
+blastn_reads_DSeries <- read_delim("/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/Blastn_Reads_DSeries.txt", delim = "\t")
+
+blastn_reads_UDSeries <- read_delim("/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/Blastn_Reads_UDSeries.txt", delim = "\t")
+
+#boxplot
+library(ggsignif)
+ggplot(blastn_reads_DSeries, aes(x=GalGalNac_Expression, y=log10(Reads_number))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  geom_signif(comparisons = list(c("High GalGalNac Expression", "Low GalGalNac Expression")), 
+              map_signif_level=TRUE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+ggplot(blastn_reads_UDSeries, aes(x=GalGalNac_Expression, y=log10(Reads_number))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  geom_signif(comparisons = list(c("High GalGalNac Expression", "Low GalGalNac Expression")), 
+              map_signif_level=FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+```
+
+#### Data for 788 MyBrCa samples with IHC data
+```{r}
+MyBrCa_788 <- read_delim("/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/788_MyBrCa_IHC_Subtypes.txt", delim = "\t")
+MyBrCa_788
+MyBrCa_788_info <- summary(MyBrCa_788$GalGalnac_genes_ssGSEA_Enrichment)
+
+MyBrCa_1st_Quartile <- MyBrCa_788 %>%
+  filter(GalGalnac_genes_ssGSEA_Enrichment < 16947)
+
+MyBrCa_2nd_Quartile <- MyBrCa_788 %>%
+  filter(GalGalnac_genes_ssGSEA_Enrichment > 16947 & GalGalnac_genes_ssGSEA_Enrichment < 18438)
+
+MyBrCa_3rd_Quartile <- MyBrCa_788 %>%
+  filter(GalGalnac_genes_ssGSEA_Enrichment > 18438 & GalGalnac_genes_ssGSEA_Enrichment < 19805)
+
+MyBrCa_4th_Quartile <- MyBrCa_788 %>%
+  filter(GalGalnac_genes_ssGSEA_Enrichment > 19805)
+
+# Box plot first quartile
+MyBrCa_1st_Quartile$IHC_Subtype <- factor(MyBrCa_1st_Quartile$IHC_Subtype, levels = c("HR+/HER2+", "HR+/HER2-", "TNBC", "HR-/HER2+"))
+ggplot(MyBrCa_1st_Quartile, aes(x=IHC_Subtype, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  #geom_signif(comparisons = list(c("High GalGalNac Expression", "Low GalGalNac Expression")), 
+  #            map_signif_level=FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+# Box plot 2nd quartile
+MyBrCa_2nd_Quartile$IHC_Subtype <- factor(MyBrCa_2nd_Quartile$IHC_Subtype, levels = c("HR+/HER2+", "HR+/HER2-", "TNBC", "HR-/HER2+"))
+ggplot(MyBrCa_2nd_Quartile, aes(x=IHC_Subtype, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  #geom_signif(comparisons = list(c("High GalGalNac Expression", "Low GalGalNac Expression")), 
+  #            map_signif_level=FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+# Box plot 3rd quartile
+MyBrCa_3rd_Quartile$IHC_Subtype <- factor(MyBrCa_3rd_Quartile$IHC_Subtype, levels = c("HR+/HER2-", "HR+/HER2+", "HR-/HER2+", "TNBC"))
+ggplot(MyBrCa_3rd_Quartile, aes(x=IHC_Subtype, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  #geom_signif(comparisons = list(c("High GalGalNac Expression", "Low GalGalNac Expression")), 
+  #            map_signif_level=FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+# Box plot 4th quartile
+MyBrCa_4th_Quartile$IHC_Subtype <- factor(MyBrCa_4th_Quartile$IHC_Subtype, levels = c("HR+/HER2-", "HR+/HER2+", "HR-/HER2+", "TNBC"))
+ggplot(MyBrCa_4th_Quartile, aes(x=IHC_Subtype, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  #geom_signif(comparisons = list(c("High GalGalNac Expression", "Low GalGalNac Expression")), 
+  #            map_signif_level=FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+# Box plot all
+MyBrCa_788$IHC_Subtype <- factor(MyBrCa_788$IHC_Subtype, levels = c("HR-/HER2+", "HR+/HER2+", "HR+/HER2-", "TNBC"))
+ggplot(MyBrCa_788, aes(x=IHC_Subtype, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  geom_signif(comparisons = list(c("HR-/HER2+", "HR+/HER2-")), 
+              map_signif_level=TRUE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+
+#summary(MyBrCa_3rd_Quartile[which(MyBrCa_4th_Quartile$IHC_Subtype == "HR+/HER2-"),2])
+```
+
+#### Different expression trend
+```{r}
+HRneg_Her2pos_1Q <- MyBrCa_1st_Quartile %>%
+  filter(IHC_Subtype == "HR-/HER2+")
+HRneg_Her2pos_1Q$Stage <- "1st Quarter"
+
+HRneg_Her2pos_2Q <- MyBrCa_2nd_Quartile %>%
+  filter(IHC_Subtype == "HR-/HER2+")
+HRneg_Her2pos_2Q$Stage <- "2nd Quarter"
+
+HRneg_Her2pos_3Q <- MyBrCa_3rd_Quartile %>%
+  filter(IHC_Subtype == "HR-/HER2+")
+HRneg_Her2pos_3Q$Stage <- "3rd Quarter"
+
+HRneg_Her2pos_4Q <- MyBrCa_4th_Quartile %>%
+  filter(IHC_Subtype == "HR-/HER2+")
+HRneg_Her2pos_4Q$Stage <- "4th Quarter"
+
+HRneg_Her2pos_All <- bind_rows(HRneg_Her2pos_1Q, HRneg_Her2pos_2Q, HRneg_Her2pos_3Q, HRneg_Her2pos_4Q)
+HRneg_Her2pos_All
+
+# box plot
+ggplot(HRneg_Her2pos_All, aes(x=Stage, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  # geom_signif(comparisons = list(c("HR-/HER2+", "HR+/HER2-")), map_signif_level=TRUE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+HRpos_Her2pos_1Q <- MyBrCa_1st_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2+")
+HRpos_Her2pos_1Q$Stage <- "1st Quarter"
+
+HRpos_Her2pos_2Q <- MyBrCa_2nd_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2+")
+HRpos_Her2pos_2Q$Stage <- "2nd Quarter"
+
+HRpos_Her2pos_3Q <- MyBrCa_3rd_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2+")
+HRpos_Her2pos_3Q$Stage <- "3rd Quarter"
+
+HRpos_Her2pos_4Q <- MyBrCa_4th_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2+")
+HRpos_Her2pos_4Q$Stage <- "4th Quarter"
+
+HRpos_Her2pos_All <- bind_rows(HRpos_Her2pos_1Q, HRpos_Her2pos_2Q, HRpos_Her2pos_3Q, HRpos_Her2pos_4Q)
+HRpos_Her2pos_All
+
+# box plot
+ggplot(HRpos_Her2pos_All, aes(x=Stage, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  # geom_signif(comparisons = list(c("HR-/HER2+", "HR+/HER2-")), map_signif_level=TRUE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+HRpos_Her2neg_1Q <- MyBrCa_1st_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2-")
+HRpos_Her2neg_1Q$Stage <- "1st Quarter"
+
+HRpos_Her2neg_2Q <- MyBrCa_2nd_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2-")
+HRpos_Her2neg_2Q$Stage <- "2nd Quarter"
+
+HRpos_Her2neg_3Q <- MyBrCa_3rd_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2-")
+HRpos_Her2neg_3Q$Stage <- "3rd Quarter"
+
+HRpos_Her2neg_4Q <- MyBrCa_4th_Quartile %>%
+  filter(IHC_Subtype == "HR+/HER2-")
+HRpos_Her2neg_4Q$Stage <- "4th Quarter"
+
+HRpos_Her2neg_All <- bind_rows(HRpos_Her2neg_1Q, HRpos_Her2neg_2Q, HRpos_Her2neg_3Q, HRpos_Her2neg_4Q)
+HRpos_Her2neg_All
+
+# box plot
+ggplot(HRpos_Her2neg_All, aes(x=Stage, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  # geom_signif(comparisons = list(c("HR-/HER2+", "HR+/HER2-")), map_signif_level=TRUE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+
+TNBC_1Q <- MyBrCa_1st_Quartile %>%
+  filter(IHC_Subtype == "TNBC")
+TNBC_1Q$Stage <- "1st Quarter"
+
+TNBC_2Q <- MyBrCa_2nd_Quartile %>%
+  filter(IHC_Subtype == "TNBC")
+TNBC_2Q$Stage <- "2nd Quarter"
+
+TNBC_3Q <- MyBrCa_3rd_Quartile %>%
+  filter(IHC_Subtype == "TNBC")
+TNBC_3Q$Stage <- "3rd Quarter"
+
+TNBC_4Q <- MyBrCa_4th_Quartile %>%
+  filter(IHC_Subtype == "TNBC")
+TNBC_4Q$Stage <- "4th Quarter"
+
+TNBC_All <- bind_rows(TNBC_1Q, TNBC_2Q, TNBC_3Q, TNBC_4Q)
+TNBC_All
+
+# box plot
+ggplot(TNBC_All, aes(x=Stage, y=log10(GalGalnac_genes_ssGSEA_Enrichment))) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.2) +
+  # geom_signif(comparisons = list(c("HR-/HER2+", "HR+/HER2-")), map_signif_level=TRUE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+```
+
+#### Linear regression of Gal-GalNac expression with Immune Score
+```{r}
+MyBrCa_788 <- read_delim("/Users/mac/OneDrive - Cancer Research Malaysia/BrCA/F_nucleatum/Data/788_MyBrCa_IHC_Subtypes.txt", delim = "\t")
+
+# R = -0.1621401
+cor(log10(MyBrCa_788$GalGalnac_genes_ssGSEA_Enrichment), MyBrCa_788$ESTIMATE_ImmuneScore)
+scatter.smooth(x=log10(MyBrCa_788$GalGalnac_genes_ssGSEA_Enrichment), y=MyBrCa_788$ESTIMATE_ImmuneScore, main="ESTIMATE_ImmuneScore ~ log10(MyBrCa_788$GalGalnac_genes_ssGSEA_Enrichment)")  # scatterplot
+
+# For all 788
+ggplot(data = MyBrCa_788, aes(x = GalGalnac_genes_ssGSEA_Enrichment, y = ESTIMATE_ImmuneScore)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+cor(MyBrCa_788$ESTIMATE_ImmuneScore, MyBrCa_788$GalGalnac_genes_ssGSEA_Enrichment) #-0.1742084
+
+lm_fit <- lm(ESTIMATE_ImmuneScore ~ GalGalnac_genes_ssGSEA_Enrichment, data=MyBrCa_788)
+summary(lm_fit)
+
+# For HR-/HER2+
+HRneg_Her2pos_subtype <- MyBrCa_788 %>%
+  filter(IHC_Subtype == "HR-/HER2+")
+ggplot(data = HRneg_Her2pos_subtype, aes(x = GalGalnac_genes_ssGSEA_Enrichment, y = ESTIMATE_ImmuneScore)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+cor(HRneg_Her2pos_subtype$ESTIMATE_ImmuneScore, HRneg_Her2pos_subtype$GalGalnac_genes_ssGSEA_Enrichment) #-0.1483607
+
+lm_fit <- lm(ESTIMATE_ImmuneScore ~ GalGalnac_genes_ssGSEA_Enrichment, data=HRneg_Her2pos_subtype)
+summary(lm_fit)
+
+# For HR+/HER2+
+HRpos_Her2pos_subtype <- MyBrCa_788 %>%
+  filter(IHC_Subtype == "HR+/HER2+")
+ggplot(data = HRpos_Her2pos_subtype, aes(x = GalGalnac_genes_ssGSEA_Enrichment, y = ESTIMATE_ImmuneScore)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+cor(HRpos_Her2pos_subtype$ESTIMATE_ImmuneScore, HRpos_Her2pos_subtype$GalGalnac_genes_ssGSEA_Enrichment) #-0.06956766
+
+lm_fit <- lm(ESTIMATE_ImmuneScore ~ GalGalnac_genes_ssGSEA_Enrichment, data=HRpos_Her2pos_subtype)
+summary(lm_fit)
+
+# For HR+/HER2-
+HRpos_Her2neg_subtype <- MyBrCa_788 %>%
+  filter(IHC_Subtype == "HR+/HER2-")
+ggplot(data = HRpos_Her2neg_subtype, aes(x = GalGalnac_genes_ssGSEA_Enrichment, y = ESTIMATE_ImmuneScore)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+cor(HRpos_Her2neg_subtype$ESTIMATE_ImmuneScore, HRpos_Her2neg_subtype$GalGalnac_genes_ssGSEA_Enrichment) #-0.1922421
+
+lm_fit <- lm(ESTIMATE_ImmuneScore ~ GalGalnac_genes_ssGSEA_Enrichment, data=HRpos_Her2neg_subtype)
+summary(lm_fit)
+
+# For TNBC
+TNBC_subtype <- MyBrCa_788 %>%
+  filter(IHC_Subtype == "TNBC")
+ggplot(data = TNBC_subtype, aes(x = GalGalnac_genes_ssGSEA_Enrichment, y = ESTIMATE_ImmuneScore)) + 
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  theme(aspect.ratio = 1)
+cor(TNBC_subtype$ESTIMATE_ImmuneScore, TNBC_subtype$GalGalnac_genes_ssGSEA_Enrichment) #-0.02757821
+
+lm_fit <- lm(ESTIMATE_ImmuneScore ~ GalGalnac_genes_ssGSEA_Enrichment, data=TNBC_subtype)
+summary(lm_fit)
+
+
+```
+
+
+
 
 #### Session info
 ```{r}
